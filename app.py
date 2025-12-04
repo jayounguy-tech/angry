@@ -224,7 +224,7 @@ if "messages" not in st.session_state:
     # 開場白
     st.session_state.messages.append({
         "role": "assistant", 
-        "content": "你還知道要回來？都幾點了？"
+        "content": "怎樣嗎?"
     })
 
 # 6. 設定 AI Model 邏輯
@@ -264,7 +264,7 @@ def get_ai_response(user_text, api_key):
         return None
 
 # 7. 介面標題
-st.title("☠️ 家庭生存模擬器")
+st.title("婚後體驗模擬器")
 st.caption("請謹慎輸入，對方情緒很不穩定...")
 
 # 8. 顯示歷史訊息
