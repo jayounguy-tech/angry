@@ -239,6 +239,8 @@ def get_ai_response(user_text, api_key):
         response = model.generate_content(system_prompt)
         return response.text
     except Exception as e:
+        # 將具體錯誤顯示在側邊欄，方便除錯
+        st.sidebar.error(f"⚠️ AI 連線錯誤: {e}")
         return None
 
 # 7. 介面標題
