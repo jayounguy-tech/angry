@@ -15,8 +15,7 @@ API_KEY = "AIzaSyDA5kveo53vq0wPIYnvFVMnJcub3RkiEQ4"
 
 # 1. 頁面基本設定
 st.set_page_config(
-    page_title="家庭生存模擬器 (AI 加強版)",
-    page_icon="💀",
+    page_title="婚後體驗模擬器",
     layout="centered"
 )
 
