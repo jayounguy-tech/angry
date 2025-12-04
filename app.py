@@ -304,7 +304,7 @@ if user_input := st.chat_input("說點話來辯解 (或討罵)..."):
             else:
                 # API 失敗 (例如 Key 錯誤)，Fallback 到資料庫
                 selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
-                response_text = "[系統: AI連線不穩，切換回隨機碎念模式] " + " ".join(selected_sentences)
+                response_text = "[碎念] " + " ".join(selected_sentences)
         else:
             # 沒有 Key 或沒有套件，使用資料庫隨機組合
             selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
