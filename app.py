@@ -215,7 +215,8 @@ def get_ai_response(user_text, api_key):
         return None
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash') # 使用輕量快速的模型
+        # 改用更普及穩定的 gemini-pro 模型，避免 404 錯誤
+        model = genai.GenerativeModel('gemini-pro') 
         
         # 建立崩潰家長的 System Prompt
         system_prompt = f"""
