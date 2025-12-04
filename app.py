@@ -79,6 +79,23 @@ with st.sidebar:
     if HAS_GENAI:
         st.success("✅ AI 模組已載入")
         st.caption("目前模式：AI 智慧碎念")
+        
+        # --- 自動偵測可用模型 (除錯用) ---
+        try:
+            genai.configure(api_key=API_KEY)
+            available_models = []
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    available_models.append(m.name)
+            
+            with st.expander("查看可用模型列表"):
+                if available_models:
+                    st.write(available_models)
+                else:
+                    st.error("此 API Key 找不到任何支援文字生成的模型。")
+        except Exception as e:
+            st.error(f"API Key 驗證失敗: {e}")
+
     else:
         st.error("⚠️ 未偵測到 `google-generativeai` 套件")
         st.caption("目前模式：隨機語錄 (Fallback)")
@@ -215,8 +232,34 @@ def get_ai_response(user_text, api_key):
         return None
     try:
         genai.configure(api_key=api_key)
-        # 改用更普及穩定的 gemini-pro 模型，避免 404 錯誤
-        model = genai.GenerativeModel('gemini-pro') 
+        
+        # --- 自動選擇模型邏輯 ---
+        # 1. 獲取所有模型
+        target_model_name = None
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                # 優先尋找 flash 或 pro 模型
+                if 'flash' in m.name:
+                    target_model_name = m.name
+                    break
+                elif 'pro' in m.name and not target_model_name:
+                    target_model_name = m.name
+        
+        # 如果沒找到 flash/pro，就用第一個可用的
+        if not target_model_name:
+            for m in genai.list_models():
+                if 'generateContent' in m.supported_generation_methods:
+                    target_model_name = m.name
+                    break
+        
+        if not target_model_name:
+            st.sidebar.error("⚠️ 錯誤：您的 API Key 無法存取任何生成模型。")
+            return None
+
+        # 顯示目前使用的模型 (Debug用)
+        # st.sidebar.info(f"使用模型: {target_model_name}") 
+
+        model = genai.GenerativeModel(target_model_name) 
         
         # 建立崩潰家長的 System Prompt
         system_prompt = f"""
