@@ -83,6 +83,7 @@ with st.sidebar:
         # --- 自動偵測可用模型 (除錯用) ---
         try:
             genai.configure(api_key=API_KEY)
+            # 這裡保留檢查邏輯僅供參考，不影響主程式運行
             available_models = []
             for m in genai.list_models():
                 if 'generateContent' in m.supported_generation_methods:
@@ -233,33 +234,8 @@ def get_ai_response(user_text, api_key):
     try:
         genai.configure(api_key=api_key)
         
-        # --- 自動選擇模型邏輯 ---
-        # 1. 獲取所有模型
-        target_model_name = None
-        for m in genai.list_models():
-            if 'generateContent' in m.supported_generation_methods:
-                # 優先尋找 flash 或 pro 模型
-                if 'flash' in m.name:
-                    target_model_name = m.name
-                    break
-                elif 'pro' in m.name and not target_model_name:
-                    target_model_name = m.name
-        
-        # 如果沒找到 flash/pro，就用第一個可用的
-        if not target_model_name:
-            for m in genai.list_models():
-                if 'generateContent' in m.supported_generation_methods:
-                    target_model_name = m.name
-                    break
-        
-        if not target_model_name:
-            st.sidebar.error("⚠️ 錯誤：您的 API Key 無法存取任何生成模型。")
-            return None
-
-        # 顯示目前使用的模型 (Debug用)
-        # st.sidebar.info(f"使用模型: {target_model_name}") 
-
-        model = genai.GenerativeModel(target_model_name) 
+        # 直接指定 gemini-2.5-flash，這是目前速度最快且穩定的選擇
+        model = genai.GenerativeModel('gemini-2.5-flash') 
         
         # 建立崩潰家長的 System Prompt
         system_prompt = f"""
