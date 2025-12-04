@@ -217,9 +217,13 @@ if user_input := st.chat_input("說點話來辯解 (或討罵)..."):
         response_text = "你累？我比你更累好不好！我白天要上班晚上還要顧小孩，你到底在累什麼？"
     elif "愛你" in user_input:
         response_text = "少在那邊花言巧語，去把地拖一拖比較實際啦。"
+    elif "做愛" in user_input or "愛愛" in user_input:
+        response_text = "都幾點了你還在想這個？小孩還沒睡你是不會去哄喔？整天只想爽，家事怎麼沒看你這麼積極？去把衣服洗一洗冷靜一下啦！"
     else:
-        # 如果沒有特定關鍵字，隨機挑選一條「長篇大論」
-        response_text = random.choice(NAGGING_DATABASE)
+        # 如果沒有特定關鍵字，隨機挑選至少 4 條「長篇大論」組合成超長碎念
+        # 使用 random.sample 不重複選取，這裡設定取 4 到 6 句
+        selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
+        response_text = " ".join(selected_sentences)
 
     # 顯示機器人回應 (帶有打字機效果)
     with st.chat_message("assistant"):
