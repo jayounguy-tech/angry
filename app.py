@@ -9,6 +9,10 @@ try:
 except ImportError:
     HAS_GENAI = False
 
+# --- 設定 API Key ---
+# ⚠️ 注意：請勿將含有 API Key 的程式碼上傳至公開儲存庫
+API_KEY = "AIzaSyDA5kveo53vq0wPIYnvFVMnJcub3RkiEQ4"
+
 # 1. 頁面基本設定
 st.set_page_config(
     page_title="家庭生存模擬器 (AI 加強版)",
@@ -69,20 +73,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. 側邊欄設定 (API Key 輸入)
+# 3. 側邊欄設定 (已移除 Key 輸入，僅顯示狀態)
 with st.sidebar:
-    st.header("⚙️ 設定")
+    st.header("⚙️ 系統狀態")
     if HAS_GENAI:
-        st.caption("輸入 Google Gemini API Key 以啟動 AI 互動模式。若未輸入，將使用內建隨機語錄。")
-        api_key = st.text_input("Gemini API Key", type="password")
+        st.success("✅ AI 模組已載入")
+        st.caption("目前模式：AI 智慧碎念")
     else:
         st.error("⚠️ 未偵測到 `google-generativeai` 套件")
-        st.caption("系統將強制使用「內建隨機語錄」模式。")
-        st.info("若在 Streamlit Cloud 部署，請建立 `requirements.txt` 並加入 `google-generativeai`。")
-        api_key = None
-
-    st.markdown("---")
-    st.markdown("💡 **提示**：沒有 Key 依然可以玩，系統會使用隨機語錄模式。")
+        st.caption("目前模式：隨機語錄 (Fallback)")
 
 # 4. 定義「崩潰碎碎念」資料庫 (Fallback 用，或是作為 AI 的 Few-shot 範例)
 NAGGING_DATABASE = [
@@ -244,7 +243,7 @@ def get_ai_response(user_text, api_key):
 
 # 7. 介面標題
 st.title("☠️ 家庭生存模擬器")
-st.caption("請謹慎輸入，對方情緒很不穩定... (已啟用混合模式)")
+st.caption("請謹慎輸入，對方情緒很不穩定...")
 
 # 8. 顯示歷史訊息
 for msg in st.session_state.messages:
@@ -275,15 +274,15 @@ if user_input := st.chat_input("說點話來辯解 (或討罵)..."):
         response_text = "都幾點了你還在想這個？小孩還沒睡你是不會去哄喔？整天只想爽，家事怎麼沒看你這麼積極？去把衣服洗一洗冷靜一下啦！"
     else:
         # --- 次要層：AI 生成 或 隨機資料庫 ---
-        if api_key and HAS_GENAI:
+        if HAS_GENAI:
             # 嘗試使用 AI 生成
-            ai_reply = get_ai_response(user_input, api_key)
+            ai_reply = get_ai_response(user_input, API_KEY)
             if ai_reply:
                 response_text = ai_reply
             else:
                 # API 失敗 (例如 Key 錯誤)，Fallback 到資料庫
                 selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
-                response_text = "[系統: 連線不穩，切換回自動罵人模式] " + " ".join(selected_sentences)
+                response_text = "[系統: AI連線不穩，切換回隨機碎念模式] " + " ".join(selected_sentences)
         else:
             # 沒有 Key 或沒有套件，使用資料庫隨機組合
             selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
