@@ -1,7 +1,13 @@
 import streamlit as st
 import random
 import time
-import google.generativeai as genai
+
+# 嘗試匯入 Gemini 套件，若失敗則設定旗標，避免程式崩潰
+try:
+    import google.generativeai as genai
+    HAS_GENAI = True
+except ImportError:
+    HAS_GENAI = False
 
 # 1. 頁面基本設定
 st.set_page_config(
@@ -66,8 +72,15 @@ st.markdown("""
 # 3. 側邊欄設定 (API Key 輸入)
 with st.sidebar:
     st.header("⚙️ 設定")
-    st.caption("輸入 Google Gemini API Key 以啟動 AI 互動模式。若未輸入，將使用內建隨機語錄。")
-    api_key = st.text_input("Gemini API Key", type="password")
+    if HAS_GENAI:
+        st.caption("輸入 Google Gemini API Key 以啟動 AI 互動模式。若未輸入，將使用內建隨機語錄。")
+        api_key = st.text_input("Gemini API Key", type="password")
+    else:
+        st.error("⚠️ 未偵測到 `google-generativeai` 套件")
+        st.caption("系統將強制使用「內建隨機語錄」模式。")
+        st.info("若在 Streamlit Cloud 部署，請建立 `requirements.txt` 並加入 `google-generativeai`。")
+        api_key = None
+
     st.markdown("---")
     st.markdown("💡 **提示**：沒有 Key 依然可以玩，系統會使用隨機語錄模式。")
 
@@ -199,6 +212,8 @@ if "messages" not in st.session_state:
 
 # 6. 設定 AI Model 邏輯
 def get_ai_response(user_text, api_key):
+    if not HAS_GENAI:
+        return None
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash') # 使用輕量快速的模型
@@ -260,7 +275,7 @@ if user_input := st.chat_input("說點話來辯解 (或討罵)..."):
         response_text = "都幾點了你還在想這個？小孩還沒睡你是不會去哄喔？整天只想爽，家事怎麼沒看你這麼積極？去把衣服洗一洗冷靜一下啦！"
     else:
         # --- 次要層：AI 生成 或 隨機資料庫 ---
-        if api_key:
+        if api_key and HAS_GENAI:
             # 嘗試使用 AI 生成
             ai_reply = get_ai_response(user_input, api_key)
             if ai_reply:
@@ -270,7 +285,7 @@ if user_input := st.chat_input("說點話來辯解 (或討罵)..."):
                 selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
                 response_text = "[系統: 連線不穩，切換回自動罵人模式] " + " ".join(selected_sentences)
         else:
-            # 沒有 Key，使用資料庫隨機組合
+            # 沒有 Key 或沒有套件，使用資料庫隨機組合
             selected_sentences = random.sample(NAGGING_DATABASE, k=random.randint(4, 6))
             response_text = " ".join(selected_sentences)
 
